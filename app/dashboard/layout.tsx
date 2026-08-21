@@ -3,8 +3,7 @@ import { redirect } from 'next/navigation';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import { verifyToken } from '@/lib/auth';
-import DashboardSidebar from './DashboardSidebar';
-import DashboardHeader from './DashboardHeader';
+import DashboardLayoutWrapper from './DashboardLayoutWrapper';
 
 interface User {
   id: string;
@@ -47,12 +46,8 @@ export default async function DashboardLayout({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DashboardSidebar />
-      <div className="ml-64">
-        <DashboardHeader user={safeUser} />
-        <main className="p-6">{children}</main>
-      </div>
-    </div>
+    <DashboardLayoutWrapper user={safeUser}>
+      {children}
+    </DashboardLayoutWrapper>
   );
 }
