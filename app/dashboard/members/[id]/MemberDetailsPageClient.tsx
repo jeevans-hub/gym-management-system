@@ -7,6 +7,7 @@ import DeleteMemberDialog from '../DeleteMemberDialog';
 import { MemberPageError, MemberPageLoading } from '../MemberPageState';
 import { useMember } from '../useMember';
 import MemberDetails from './MemberDetails';
+import MemberMemberships from './MemberMemberships';
 
 interface MemberDetailsPageClientProps {
   memberId: string;
@@ -50,6 +51,7 @@ export default function MemberDetailsPageClient({ memberId, success }: MemberDet
       </div>
 
       <MemberDetails member={member} />
+      <MemberMemberships memberId={member.memberId} />
 
       {showDelete && (
         <DeleteMemberDialog
