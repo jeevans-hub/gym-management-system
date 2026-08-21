@@ -10,8 +10,6 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, email, password, role } = body;
 
-    console.log('Registration attempt:', { name, email, role });
-
     // Validate required fields
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -32,8 +30,6 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log('Creating user...');
-
     // Hash password before creating user
     const hashedPassword = await hashPassword(password);
 
@@ -45,16 +41,12 @@ export async function POST(request: Request) {
       role: role || 'admin',
     });
 
-    console.log('User created:', user._id);
-
     // Create JWT token
     const token = createToken({
       userId: user._id.toString(),
       email: user.email,
       role: user.role,
     });
-
-    console.log('Token created');
 
     // Set HTTP-only cookie
     const response = NextResponse.json(
@@ -79,13 +71,9 @@ export async function POST(request: Request) {
       path: '/',
     });
 
-    console.log('Response ready');
     return response;
   } catch (error: any) {
     console.error('Registration error:', error);
-    console.error('Error name:', error.name);
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
     return NextResponse.json(
       { error: 'Registration failed. Please try again.' },
       { status: 500 }

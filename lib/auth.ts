@@ -30,7 +30,7 @@ export interface JWTPayload {
 
 // Create JWT token
 export function createToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, {
+  return jwt.sign(payload, JWT_SECRET as string, {
     expiresIn: '7d', // Token expires in 7 days
   });
 }
@@ -38,7 +38,8 @@ export function createToken(payload: JWTPayload): string {
 // Verify JWT token
 export function verifyToken(token: string): JWTPayload {
   try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const decoded = jwt.verify(token, JWT_SECRET as string) as JWTPayload;
+    return decoded;
   } catch (error) {
     throw new Error('Invalid or expired token');
   }
