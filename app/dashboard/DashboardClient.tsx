@@ -8,14 +8,6 @@ interface StatCard {
   trend?: string;
 }
 
-interface RecentItem {
-  id: string;
-  name: string;
-  date: string;
-  status: string;
-  amount?: string;
-}
-
 const statCards: StatCard[] = [
   {
     title: 'Total Members',

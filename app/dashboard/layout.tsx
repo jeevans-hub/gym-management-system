@@ -27,7 +27,7 @@ export default async function DashboardLayout({
   let decoded;
   try {
     decoded = verifyToken(tokenCookie.value);
-  } catch (error) {
+  } catch {
     redirect('/login');
   }
 

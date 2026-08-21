@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 interface MenuItem {
   name: string;
   path: string;

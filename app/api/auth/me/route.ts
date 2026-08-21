@@ -52,8 +52,11 @@ export async function GET(request: Request) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error('Auth verification error:', error);
+  } catch (error: unknown) {
+    console.error(
+      'Auth verification error:',
+      error instanceof Error ? error.name : 'UnknownError'
+    );
     return NextResponse.json(
       { error: 'Not authenticated' },
       { status: 401 }

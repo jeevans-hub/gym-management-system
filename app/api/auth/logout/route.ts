@@ -17,8 +17,8 @@ export async function POST() {
     });
 
     return response;
-  } catch (error: any) {
-    console.error('Logout error:', error);
+  } catch (error: unknown) {
+    console.error('Logout error:', error instanceof Error ? error.name : 'UnknownError');
     return NextResponse.json(
       { error: 'Logout failed. Please try again.' },
       { status: 500 }

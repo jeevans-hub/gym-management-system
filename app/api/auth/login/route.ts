@@ -70,8 +70,8 @@ export async function POST(request: Request) {
     });
 
     return response;
-  } catch (error: any) {
-    console.error('Login error:', error);
+  } catch (error: unknown) {
+    console.error('Login error:', error instanceof Error ? error.name : 'UnknownError');
     return NextResponse.json(
       { error: 'Login failed. Please try again.' },
       { status: 500 }
