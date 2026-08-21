@@ -39,11 +39,11 @@ export async function PUT(request: NextRequest, context: RouteContext<'/api/memb
     }
     await connectDB();
     const { id } = await context.params;
-    const update: Record<string, unknown> = { ...validation.data };
-    for (const [key, value] of Object.entries(update)) {
-      if (value === undefined) delete update[key];
+    const update: Record<string, unknown> = { $set: validation.data };
+    if (validation.unsetFields.length) {
+      update.$unset = Object.fromEntries(validation.unsetFields.map((field) => [field, 1]));
     }
-    const member = await Member.findOneAndUpdate(memberFilter(id), { $set: update }, { new: true, runValidators: true });
+    const member = await Member.findOneAndUpdate(memberFilter(id), update, { new: true, runValidators: true });
     if (!member) return NextResponse.json({ error: 'Member not found' }, { status: 404 });
     return NextResponse.json({ success: true, member });
   } catch (error: unknown) {

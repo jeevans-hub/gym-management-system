@@ -1,4 +1,5 @@
 export type MemberStatus = 'active' | 'inactive';
+export type MemberGender = 'male' | 'female' | 'other' | 'prefer-not-to-say';
 
 export interface MemberListItem {
   memberId: string;
@@ -8,6 +9,32 @@ export interface MemberListItem {
   phone: string;
   joiningDate: string;
   status: MemberStatus;
+}
+
+export interface MemberRecord extends MemberListItem {
+  gender?: MemberGender;
+  dateOfBirth?: string;
+  address?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  profileImage?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MemberFormValues {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  gender: '' | MemberGender;
+  dateOfBirth: string;
+  address: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  joiningDate: string;
+  status: MemberStatus;
+  profileImage: string;
 }
 
 export interface MembersResponse {

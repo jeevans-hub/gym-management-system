@@ -24,7 +24,7 @@ export interface MemberInput {
 }
 
 type ValidationResult =
-  | { success: true; data: MemberInput }
+  | { success: true; data: MemberInput; unsetFields: string[] }
   | { success: false; errors: string[] };
 
 const editableFields = new Set([
@@ -58,6 +58,11 @@ export function validateMemberInput(body: unknown, partial = false): ValidationR
   const source = body as Record<string, unknown>;
   const data: MemberInput = {};
   const errors: string[] = [];
+  const unsetFields: string[] = [];
+
+  const markUnset = (field: keyof MemberInput) => {
+    if (partial && !unsetFields.includes(field)) unsetFields.push(field);
+  };
 
   if (partial && !Object.keys(source).some((field) => editableFields.has(field))) {
     errors.push('At least one editable field is required');
@@ -75,7 +80,9 @@ export function validateMemberInput(body: unknown, partial = false): ValidationR
     }
     const trimmed = value.trim();
     if (!trimmed) {
-      if (required || value.length > 0) errors.push(`${label} cannot be empty`);
+      if (required) errors.push(`${label} cannot be empty`);
+      else if (partial) markUnset(field);
+      else if (value.length > 0) errors.push(`${label} cannot be empty`);
       return;
     }
     (data as Record<string, unknown>)[field] = trimmed;
@@ -88,8 +95,8 @@ export function validateMemberInput(body: unknown, partial = false): ValidationR
   stringField('profileImage', 'Profile image');
 
   if (source.email !== undefined) {
-    if (source.email === null || source.email === '') {
-      if (partial) data.email = undefined;
+    if (source.email === null || (typeof source.email === 'string' && !source.email.trim())) {
+      markUnset('email');
     } else if (typeof source.email !== 'string') {
       errors.push('Email must be a string');
     } else {
@@ -106,7 +113,8 @@ export function validateMemberInput(body: unknown, partial = false): ValidationR
       return;
     }
     if (typeof value !== 'string' || !value.trim()) {
-      errors.push(`${label} is required`);
+      if (required) errors.push(`${label} is required`);
+      else markUnset(field);
       return;
     }
     const phone = normalizePhone(value);
@@ -119,7 +127,7 @@ export function validateMemberInput(body: unknown, partial = false): ValidationR
 
   if (source.gender !== undefined) {
     if (source.gender === null || source.gender === '') {
-      if (partial) data.gender = undefined;
+      markUnset('gender');
     } else if (typeof source.gender !== 'string' || !MEMBER_GENDERS.includes(source.gender as MemberGender)) {
       errors.push(`Gender must be one of: ${MEMBER_GENDERS.join(', ')}`);
     } else data.gender = source.gender as MemberGender;
@@ -131,10 +139,16 @@ export function validateMemberInput(body: unknown, partial = false): ValidationR
     } else data.status = source.status as MemberStatus;
   }
 
-  if (source.dateOfBirth !== undefined) data.dateOfBirth = parseDate(source.dateOfBirth, 'Date of birth', errors);
-  if (source.joiningDate !== undefined) data.joiningDate = parseDate(source.joiningDate, 'Joining date', errors);
+  if (source.dateOfBirth !== undefined) {
+    if (source.dateOfBirth === null || source.dateOfBirth === '') markUnset('dateOfBirth');
+    else data.dateOfBirth = parseDate(source.dateOfBirth, 'Date of birth', errors);
+  }
+  if (source.joiningDate !== undefined) {
+    if (source.joiningDate === null || source.joiningDate === '') errors.push('Joining date must be a valid date');
+    else data.joiningDate = parseDate(source.joiningDate, 'Joining date', errors);
+  }
 
   if (data.dateOfBirth && data.dateOfBirth > new Date()) errors.push('Date of birth cannot be in the future');
 
-  return errors.length ? { success: false, errors } : { success: true, data };
+  return errors.length ? { success: false, errors } : { success: true, data, unsetFields };
 }

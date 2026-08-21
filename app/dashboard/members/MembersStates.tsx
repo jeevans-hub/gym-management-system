@@ -20,7 +20,7 @@ export function MembersLoadingState() {
 
 export function MembersEmptyState({ search, status }: { search: string; status: StatusFilter }) {
   let title = 'No members yet';
-  let message = 'Your member directory is ready. Add member creation will be available in the next phase.';
+  let message = 'Your member directory is ready. Use Add Member to create the first profile.';
 
   if (search && status !== 'all') {
     title = 'No members match these filters';

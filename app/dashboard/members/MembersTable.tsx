@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import MemberStatusBadge from './MemberStatusBadge';
 import type { MemberListItem } from './types';
 
@@ -12,25 +13,24 @@ function formatJoiningDate(value: string) {
   return Number.isNaN(date.getTime()) ? '—' : dateFormatter.format(date);
 }
 
-function MemberActions() {
+function MemberActions({ member, onDelete }: { member: MemberListItem; onDelete: (member: MemberListItem) => void }) {
+  const memberPath = `/dashboard/members/${encodeURIComponent(member.memberId)}`;
   return (
-    <div className="flex items-center gap-1" aria-label="Member actions coming in Phase 4.3">
-      {['View', 'Edit', 'Delete'].map((action) => (
-        <button
-          key={action}
-          type="button"
-          disabled
-          title={`${action} member — coming soon`}
-          className="cursor-not-allowed rounded-md px-2 py-1.5 text-xs font-medium text-gray-400"
-        >
-          {action}
-        </button>
-      ))}
+    <div className="flex items-center gap-1" aria-label={`Actions for ${member.firstName} ${member.lastName}`}>
+      <Link href={memberPath} className="rounded-md px-2 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        View
+      </Link>
+      <Link href={`${memberPath}/edit`} className="rounded-md px-2 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        Edit
+      </Link>
+      <button type="button" onClick={() => onDelete(member)} className="rounded-md px-2 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500">
+        Delete
+      </button>
     </div>
   );
 }
 
-export default function MembersTable({ members }: { members: MemberListItem[] }) {
+export default function MembersTable({ members, onDelete }: { members: MemberListItem[]; onDelete: (member: MemberListItem) => void }) {
   return (
     <>
       <div className="hidden overflow-x-auto md:block">
@@ -50,7 +50,9 @@ export default function MembersTable({ members }: { members: MemberListItem[] })
             {members.map((member) => (
               <tr key={member.memberId} className="transition-colors hover:bg-blue-50/30">
                 <td className="whitespace-nowrap px-5 py-4 font-mono text-sm font-semibold text-blue-700">
-                  {member.memberId}
+                  <Link href={`/dashboard/members/${encodeURIComponent(member.memberId)}`} className="hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    {member.memberId}
+                  </Link>
                 </td>
                 <td className="px-5 py-4">
                   <p className="font-semibold text-gray-900">{member.firstName} {member.lastName}</p>
@@ -61,7 +63,7 @@ export default function MembersTable({ members }: { members: MemberListItem[] })
                   {formatJoiningDate(member.joiningDate)}
                 </td>
                 <td className="px-5 py-4"><MemberStatusBadge status={member.status} /></td>
-                <td className="px-5 py-4"><div className="flex justify-end"><MemberActions /></div></td>
+                <td className="px-5 py-4"><div className="flex justify-end"><MemberActions member={member} onDelete={onDelete} /></div></td>
               </tr>
             ))}
           </tbody>
@@ -94,7 +96,7 @@ export default function MembersTable({ members }: { members: MemberListItem[] })
                 <dd className="text-right text-gray-700">{formatJoiningDate(member.joiningDate)}</dd>
               </div>
             </dl>
-            <div className="mt-3 flex justify-end border-t border-gray-100 pt-2"><MemberActions /></div>
+            <div className="mt-3 flex justify-end border-t border-gray-100 pt-2"><MemberActions member={member} onDelete={onDelete} /></div>
           </article>
         ))}
       </div>

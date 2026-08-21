@@ -1,12 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import DeleteMemberDialog from './DeleteMemberDialog';
 import MembersFilters from './MembersFilters';
 import MembersPagination from './MembersPagination';
 import { MembersEmptyState, MembersErrorState, MembersLoadingState } from './MembersStates';
 import MembersTable from './MembersTable';
-import type { MembersResponse, StatusFilter } from './types';
+import type { MemberListItem, MembersResponse, StatusFilter } from './types';
 
 const PAGE_SIZE = 10;
 
@@ -28,6 +30,7 @@ export default function MembersPageClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [memberToDelete, setMemberToDelete] = useState<MemberListItem | null>(null);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -84,6 +87,14 @@ export default function MembersPageClient() {
     setPage(1);
   }, []);
 
+  const closeDeleteDialog = useCallback(() => setMemberToDelete(null), []);
+
+  const handleDeleted = useCallback(() => {
+    setMemberToDelete(null);
+    if (data.members.length === 1 && page > 1) setPage((current) => current - 1);
+    else setRetryCount((count) => count + 1);
+  }, [data.members.length, page]);
+
   return (
     <div className="mx-auto w-full max-w-[1500px] space-y-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -100,16 +111,13 @@ export default function MembersPageClient() {
             Search, filter and review your gym&apos;s member directory.
           </p>
         </div>
-        <button
-          type="button"
-          disabled
-          title="Add Member will be available in Phase 4.3"
-          className="inline-flex cursor-not-allowed items-center justify-center gap-2 self-start rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white opacity-60 shadow-sm sm:self-auto"
+        <Link
+          href="/dashboard/members/new"
+          className="inline-flex items-center justify-center gap-2 self-start rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:self-auto"
         >
           <span aria-hidden="true" className="text-lg leading-none">+</span>
           Add Member
-          <span className="rounded bg-white/20 px-1.5 py-0.5 text-[10px] uppercase tracking-wide">Soon</span>
-        </button>
+        </Link>
       </div>
 
       <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm" aria-label="Member directory">
@@ -128,7 +136,7 @@ export default function MembersPageClient() {
         ) : data.members.length === 0 ? (
           <MembersEmptyState search={search} status={status} />
         ) : (
-          <MembersTable members={data.members} />
+          <MembersTable members={data.members} onDelete={setMemberToDelete} />
         )}
 
         {!error && !loading && (
@@ -142,6 +150,10 @@ export default function MembersPageClient() {
           />
         )}
       </section>
+
+      {memberToDelete && (
+        <DeleteMemberDialog member={memberToDelete} onClose={closeDeleteDialog} onDeleted={handleDeleted} />
+      )}
     </div>
   );
 }
