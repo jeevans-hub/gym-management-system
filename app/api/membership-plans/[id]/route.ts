@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authenticateApiRequest } from '@/lib/api-auth';
 import connectDB from '@/lib/mongodb';
 import { validateMembershipPlanInput } from '@/lib/membership-plan-validation';
+import Membership from '@/models/Membership';
 import MembershipPlan from '@/models/MembershipPlan';
 
 const CASE_INSENSITIVE_COLLATION = { locale: 'en', strength: 2 } as const;
@@ -133,6 +134,14 @@ export async function DELETE(
     }
 
     await connectDB();
+    if (await Membership.exists({ plan: objectId })) {
+      return NextResponse.json(
+        {
+          error: 'Referenced membership plans cannot be deleted; mark the plan inactive instead',
+        },
+        { status: 409 }
+      );
+    }
     const plan = await MembershipPlan.findByIdAndDelete(objectId);
     if (!plan) {
       return NextResponse.json({ error: 'Membership plan not found' }, { status: 404 });
