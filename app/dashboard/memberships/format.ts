@@ -12,10 +12,13 @@ export function durationLabel(months: number) {
 
 export function expectedEndDate(startDate: string, durationMonths: number) {
   if (!startDate) return '';
-  const start = new Date(`${startDate}T00:00:00`);
+  const start = new Date(`${startDate}T00:00:00Z`);
   if (Number.isNaN(start.getTime())) return '';
-  const end = new Date(start);
-  end.setMonth(end.getMonth() + durationMonths);
+  const absoluteMonth = start.getUTCMonth() + durationMonths;
+  const targetYear = start.getUTCFullYear() + Math.floor(absoluteMonth / 12);
+  const targetMonth = absoluteMonth % 12;
+  const lastDay = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate();
+  const end = new Date(Date.UTC(targetYear, targetMonth, Math.min(start.getUTCDate(), lastDay)));
   return end.toISOString().slice(0, 10);
 }
 
