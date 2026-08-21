@@ -1,21 +1,24 @@
 'use client';
 
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
 interface MenuItem {
   name: string;
   path: string;
-  active: boolean;
+  available: boolean;
   icon: React.ReactNode;
 }
 
 const menuItems: MenuItem[] = [
-  { name: 'Dashboard', path: '/dashboard', active: true, icon: <DashboardIcon /> },
-  { name: 'Members', path: '/dashboard/members', active: false, icon: <MembersIcon /> },
-  { name: 'Attendance', path: '/dashboard/attendance', active: false, icon: <AttendanceIcon /> },
-  { name: 'Memberships', path: '/dashboard/memberships', active: false, icon: <MembershipsIcon /> },
-  { name: 'Payments', path: '/dashboard/payments', active: false, icon: <PaymentsIcon /> },
-  { name: 'Trainers', path: '/dashboard/trainers', active: false, icon: <TrainersIcon /> },
-  { name: 'Reports', path: '/dashboard/reports', active: false, icon: <ReportsIcon /> },
-  { name: 'Settings', path: '/dashboard/settings', active: false, icon: <SettingsIcon /> },
+  { name: 'Dashboard', path: '/dashboard', available: true, icon: <DashboardIcon /> },
+  { name: 'Members', path: '/dashboard/members', available: true, icon: <MembersIcon /> },
+  { name: 'Attendance', path: '/dashboard/attendance', available: false, icon: <AttendanceIcon /> },
+  { name: 'Memberships', path: '/dashboard/memberships', available: false, icon: <MembershipsIcon /> },
+  { name: 'Payments', path: '/dashboard/payments', available: false, icon: <PaymentsIcon /> },
+  { name: 'Trainers', path: '/dashboard/trainers', available: false, icon: <TrainersIcon /> },
+  { name: 'Reports', path: '/dashboard/reports', available: false, icon: <ReportsIcon /> },
+  { name: 'Settings', path: '/dashboard/settings', available: false, icon: <SettingsIcon /> },
 ];
 
 interface DashboardSidebarProps {
@@ -24,21 +27,25 @@ interface DashboardSidebarProps {
 }
 
 export default function DashboardSidebar({ isOpen = true, onClose }: DashboardSidebarProps) {
+  const pathname = usePathname();
+
   return (
     <>
       {/* Mobile overlay */}
-      {!isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+      {isOpen && (
+        <button
+          type="button"
+          aria-label="Close navigation menu"
+          className="fixed inset-y-0 left-64 right-0 z-40 bg-black bg-opacity-50 lg:hidden"
           onClick={onClose}
         />
       )}
       
       {/* Sidebar */}
-      <aside className={`fixed left-0 top-0 h-full bg-gradient-to-b from-gray-900 to-gray-800 text-white transition-transform duration-300 ease-in-out z-50 ${
+      <aside className={`fixed left-0 top-0 z-50 flex h-full w-64 flex-col bg-gradient-to-b from-gray-900 to-gray-800 text-white transition-transform duration-300 ease-in-out ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
-      } lg:translate-x-0 lg:static lg:z-auto w-64`}>
-        <div className="p-6">
+      } lg:translate-x-0`}>
+        <div className="min-h-0 flex-1 overflow-y-auto p-6">
           {/* Branding */}
           <div className="flex items-center space-x-3 mb-8">
             <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -52,33 +59,43 @@ export default function DashboardSidebar({ isOpen = true, onClose }: DashboardSi
 
           {/* Navigation */}
           <nav className="space-y-1">
-            {menuItems.map((item) => (
-              <a
-                key={item.name}
-                href={item.path}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                  item.active
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                } ${!item.active ? 'opacity-60 cursor-not-allowed' : ''}`}
-                onClick={(e) => {
-                  if (!item.active) {
-                    e.preventDefault();
-                  }
-                  if (onClose) {
-                    onClose();
-                  }
-                }}
-              >
-                <span className="w-5 h-5">{item.icon}</span>
-                <span className="font-medium">{item.name}</span>
-              </a>
-            ))}
+            {menuItems.map((item) => {
+              const isActive = item.path === '/dashboard'
+                ? pathname === item.path
+                : pathname.startsWith(item.path);
+
+              return item.available ? (
+                <Link
+                  key={item.name}
+                  href={item.path}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                    isActive
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                      : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                  }`}
+                  onClick={onClose}
+                >
+                  <span className="w-5 h-5">{item.icon}</span>
+                  <span className="font-medium">{item.name}</span>
+                </Link>
+              ) : (
+                <div
+                  key={item.name}
+                  aria-disabled="true"
+                  title="Coming soon"
+                  className="flex cursor-not-allowed items-center space-x-3 rounded-lg px-4 py-3 text-gray-300 opacity-60"
+                >
+                  <span className="w-5 h-5">{item.icon}</span>
+                  <span className="font-medium">{item.name}</span>
+                </div>
+              );
+            })}
           </nav>
         </div>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-700">
+        <div className="shrink-0 border-t border-gray-700 p-6">
           <div className="text-xs text-gray-500">
             <p>© 2024 GymPro System</p>
             <p className="mt-1">Version 1.0.0</p>

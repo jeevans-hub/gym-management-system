@@ -99,6 +99,7 @@ export default function DashboardHeader({ user, onMenuToggle, isMenuOpen }: Dash
             {/* Logout button */}
             <button
               onClick={handleLogout}
+              aria-label="Logout"
               className="flex items-center space-x-2 px-3 lg:px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium shadow-sm hover:shadow"
             >
               <svg
