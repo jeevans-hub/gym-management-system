@@ -5,6 +5,7 @@ import { escapeRegex, memberLookup, parsePagination } from '@/lib/attendance-que
 import connectDB from '@/lib/mongodb';
 import Attendance, { ATTENDANCE_STATUSES } from '@/models/Attendance';
 import Member from '@/models/Member';
+import '@/models/User';
 
 export async function GET(request: NextRequest) {
   if (!(await authenticateApiRequest())) {
@@ -21,6 +22,8 @@ export async function GET(request: NextRequest) {
     }
 
     const date = request.nextUrl.searchParams.get('date')?.trim();
+    const from = request.nextUrl.searchParams.get('from')?.trim();
+    const to = request.nextUrl.searchParams.get('to')?.trim();
     const status = request.nextUrl.searchParams.get('status')?.trim();
     const memberValue = request.nextUrl.searchParams.get('member')?.trim();
     const search = request.nextUrl.searchParams.get('search')?.trim();
@@ -31,14 +34,35 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
+    if (date && (from || to)) {
+      return NextResponse.json(
+        { error: 'Use either an exact date or a date range, not both' },
+        { status: 400 }
+      );
+    }
     const dayBounds = date ? getGymDayBounds(date) : null;
-    if (date && !dayBounds) {
-      return NextResponse.json({ error: 'Date must use the YYYY-MM-DD format' }, { status: 400 });
+    const fromBounds = from ? getGymDayBounds(from) : null;
+    const toBounds = to ? getGymDayBounds(to) : null;
+    if ((date && !dayBounds) || (from && !fromBounds) || (to && !toBounds)) {
+      return NextResponse.json(
+        { error: 'Date values must use the YYYY-MM-DD format' },
+        { status: 400 }
+      );
+    }
+    if (fromBounds && toBounds && fromBounds.start > toBounds.start) {
+      return NextResponse.json({ error: 'From date cannot be after to date' }, { status: 400 });
     }
 
     await connectDB();
     const filter: Record<string, unknown> = {};
-    if (dayBounds) filter.attendanceDate = { $gte: dayBounds.start, $lt: dayBounds.end };
+    if (dayBounds) {
+      filter.attendanceDate = { $gte: dayBounds.start, $lt: dayBounds.end };
+    } else if (fromBounds || toBounds) {
+      filter.attendanceDate = {
+        ...(fromBounds ? { $gte: fromBounds.start } : {}),
+        ...(toBounds ? { $lt: toBounds.end } : {}),
+      };
+    }
     if (status) filter.status = status;
 
     const memberConditions: Record<string, unknown>[] = [];

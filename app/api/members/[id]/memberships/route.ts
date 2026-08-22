@@ -5,6 +5,8 @@ import { expireMemberships } from '@/lib/membership-dates';
 import connectDB from '@/lib/mongodb';
 import Member from '@/models/Member';
 import Membership from '@/models/Membership';
+import '@/models/MembershipPlan';
+import '@/models/User';
 
 const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 100;

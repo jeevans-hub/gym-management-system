@@ -5,6 +5,7 @@ import { memberLookup, parsePagination } from '@/lib/attendance-query';
 import connectDB from '@/lib/mongodb';
 import Attendance from '@/models/Attendance';
 import Member from '@/models/Member';
+import '@/models/User';
 
 export async function GET(
   request: NextRequest,

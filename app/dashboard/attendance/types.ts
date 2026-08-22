@@ -19,6 +19,10 @@ export interface AttendanceRecord {
   updatedAt: string;
 }
 
+export interface MemberAttendanceResponse extends AttendanceResponse {
+  member: AttendanceMember;
+}
+
 export interface AttendanceResponse {
   attendance: AttendanceRecord[];
   page: number;
