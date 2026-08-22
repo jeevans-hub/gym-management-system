@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { authorizeAdminApiRequest } from '@/lib/admin-auth';
 import { authenticateApiRequest } from '@/lib/api-auth';
 import { validateGymSettingsInput } from '@/lib/gym-settings-validation';
 import connectDB from '@/lib/mongodb';
@@ -50,10 +51,8 @@ export async function GET() {
 }
 
 export async function PUT(request: NextRequest) {
-  const user = await authenticateApiRequest();
-  if (!user) {
-    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-  }
+  const authorization = await authorizeAdminApiRequest();
+  if (!authorization.authorized) return authorization.response;
 
   try {
     const validation = validateGymSettingsInput(await request.json());
@@ -68,7 +67,7 @@ export async function PUT(request: NextRequest) {
     const settings = await GymSettings.findByIdAndUpdate(
       GYM_SETTINGS_ID,
       {
-        $set: { ...validation.data, updatedBy: user.userId },
+        $set: { ...validation.data, updatedBy: authorization.user.userId },
         $setOnInsert: { _id: GYM_SETTINGS_ID },
       },
       {

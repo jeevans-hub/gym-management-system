@@ -3,16 +3,10 @@
 import { useState } from 'react';
 import DashboardSidebar from './DashboardSidebar';
 import DashboardHeader from './DashboardHeader';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+import { DashboardUserProvider, type DashboardUser } from './DashboardUserContext';
 
 interface DashboardLayoutWrapperProps {
-  user: User;
+  user: DashboardUser;
   children: React.ReactNode;
 }
 
@@ -31,16 +25,18 @@ export default function DashboardLayoutWrapper({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DashboardSidebar isOpen={isMenuOpen} onClose={closeMenu} />
-      <div className="lg:ml-64">
-        <DashboardHeader 
-          user={user} 
-          onMenuToggle={toggleMenu} 
-          isMenuOpen={isMenuOpen} 
-        />
-        <main className="p-4 lg:p-6">{children}</main>
+    <DashboardUserProvider user={user}>
+      <div className="min-h-screen bg-gray-50">
+        <DashboardSidebar isOpen={isMenuOpen} onClose={closeMenu} />
+        <div className="min-w-0 lg:ml-64">
+          <DashboardHeader
+            user={user}
+            onMenuToggle={toggleMenu}
+            isMenuOpen={isMenuOpen}
+          />
+          <main className="min-w-0 overflow-x-hidden p-4 lg:p-6">{children}</main>
+        </div>
       </div>
-    </div>
+    </DashboardUserProvider>
   );
 }

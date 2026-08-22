@@ -18,7 +18,7 @@ const menuItems: MenuItem[] = [
   { name: 'Payments', path: '/dashboard/payments', available: true, icon: <PaymentsIcon /> },
   { name: 'Trainers', path: '/dashboard/trainers', available: true, icon: <TrainersIcon /> },
   { name: 'Reports', path: '/dashboard/reports', available: true, icon: <ReportsIcon /> },
-  { name: 'Settings', path: '/dashboard/settings', available: false, icon: <SettingsIcon /> },
+  { name: 'Settings', path: '/dashboard/settings', available: true, icon: <SettingsIcon /> },
 ];
 
 interface DashboardSidebarProps {
