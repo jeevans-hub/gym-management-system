@@ -17,7 +17,7 @@ const menuItems: MenuItem[] = [
   { name: 'Memberships', path: '/dashboard/memberships', available: true, icon: <MembershipsIcon /> },
   { name: 'Payments', path: '/dashboard/payments', available: true, icon: <PaymentsIcon /> },
   { name: 'Trainers', path: '/dashboard/trainers', available: true, icon: <TrainersIcon /> },
-  { name: 'Reports', path: '/dashboard/reports', available: false, icon: <ReportsIcon /> },
+  { name: 'Reports', path: '/dashboard/reports', available: true, icon: <ReportsIcon /> },
   { name: 'Settings', path: '/dashboard/settings', available: false, icon: <SettingsIcon /> },
 ];
 
