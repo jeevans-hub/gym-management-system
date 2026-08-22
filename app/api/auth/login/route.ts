@@ -23,7 +23,11 @@ export async function POST(request: Request) {
 
     // Find user and include password for comparison
     const user = await User.findOne({ email: normalizedEmail }).select('+password');
-    if (!user) {
+    if (
+      !user ||
+      typeof user.password !== 'string' ||
+      !['admin', 'staff'].includes(user.role)
+    ) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
