@@ -17,33 +17,41 @@ const PAGE_SIZE = 8;
 type DateMode = 'exact' | 'range';
 
 export default function PaymentsPageClient({
+  initialSearch,
   initialMember,
   initialMembership,
+  initialMethod,
+  initialStatus,
   initialDate,
   initialFrom,
   initialTo,
+  initialPage,
   recorded,
 }: {
+  initialSearch: string;
   initialMember: string;
   initialMembership: string;
+  initialMethod: 'all' | PaymentMethod;
+  initialStatus: 'all' | PaymentStatus;
   initialDate: string;
   initialFrom: string;
   initialTo: string;
+  initialPage: number;
   recorded: boolean;
 }) {
   const router = useRouter();
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
-  const [searchInput, setSearchInput] = useState('');
-  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState(initialSearch);
+  const [search, setSearch] = useState(initialSearch);
   const [member, setMember] = useState(initialMember);
   const [membership, setMembership] = useState(initialMembership);
-  const [method, setMethod] = useState<'all' | PaymentMethod>('all');
-  const [status, setStatus] = useState<'all' | PaymentStatus>('all');
+  const [method, setMethod] = useState<'all' | PaymentMethod>(initialMethod);
+  const [status, setStatus] = useState<'all' | PaymentStatus>(initialStatus);
   const [dateMode, setDateMode] = useState<DateMode>(initialFrom || initialTo ? 'range' : 'exact');
   const [exactDate, setExactDate] = useState(initialDate);
   const [fromDate, setFromDate] = useState(initialFrom);
   const [toDate, setToDate] = useState(initialTo);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(initialPage);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -53,12 +61,32 @@ export default function PaymentsPageClient({
   const displayedError = invalidRange ? 'From date cannot be after to date.' : error;
 
   useEffect(() => {
+    const normalizedSearch = searchInput.trim();
+    if (normalizedSearch === search) return;
     const timer = window.setTimeout(() => {
       setPage(1);
-      setSearch(searchInput.trim());
+      setSearch(normalizedSearch);
     }, 350);
     return () => window.clearTimeout(timer);
-  }, [searchInput]);
+  }, [search, searchInput]);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (search) params.set('search', search);
+    if (member.trim()) params.set('member', member.trim());
+    if (membership.trim()) params.set('membership', membership.trim());
+    if (method !== 'all') params.set('paymentMethod', method);
+    if (status !== 'all') params.set('status', status);
+    if (dateMode === 'exact' && exactDate) params.set('date', exactDate);
+    if (dateMode === 'range') {
+      if (fromDate) params.set('from', fromDate);
+      if (toDate) params.set('to', toDate);
+    }
+    if (page > 1) params.set('page', String(page));
+    if (recorded) params.set('recorded', '1');
+    const query = params.toString();
+    window.history.replaceState(null, '', `/dashboard/payments${query ? `?${query}` : ''}`);
+  }, [dateMode, exactDate, fromDate, member, membership, method, page, recorded, search, status, toDate]);
 
   useEffect(() => {
     if (invalidRange) return;
@@ -112,10 +140,24 @@ export default function PaymentsPageClient({
     setExactDate('');
     setFromDate('');
     setToDate('');
+    setDateMode('exact');
     setPage(1);
   }
 
   const filtered = Boolean(search || member || membership || method !== 'all' || status !== 'all' || exactDate || fromDate || toDate);
+  const returnQuery = new URLSearchParams();
+  if (search) returnQuery.set('search', search);
+  if (member.trim()) returnQuery.set('member', member.trim());
+  if (membership.trim()) returnQuery.set('membership', membership.trim());
+  if (method !== 'all') returnQuery.set('paymentMethod', method);
+  if (status !== 'all') returnQuery.set('status', status);
+  if (dateMode === 'exact' && exactDate) returnQuery.set('date', exactDate);
+  if (dateMode === 'range') {
+    if (fromDate) returnQuery.set('from', fromDate);
+    if (toDate) returnQuery.set('to', toDate);
+  }
+  if (page > 1) returnQuery.set('page', String(page));
+  const returnTo = `/dashboard/payments${returnQuery.size ? `?${returnQuery}` : ''}`;
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
@@ -158,8 +200,8 @@ export default function PaymentsPageClient({
           <div className="rounded-xl border border-dashed border-gray-300 bg-white px-6 py-12 text-center"><h3 className="font-semibold text-gray-900">No payments found</h3><p className="mt-2 text-sm text-gray-500">{filtered ? 'Try changing or clearing the filters.' : 'Recorded payments will appear here.'}</p>{filtered ? <button type="button" onClick={clearFilters} className="mt-4 text-sm font-semibold text-blue-700">Clear filters</button> : <Link href="/dashboard/payments/new" className="mt-4 inline-block text-sm font-semibold text-blue-700">Record the first payment →</Link>}</div>
         ) : (
           <>
-            <div className="hidden overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm xl:block"><table className="w-full text-left"><thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500"><tr><th className="px-4 py-3">Date</th><th className="px-4 py-3">Member</th><th className="px-4 py-3">Membership</th><th className="px-4 py-3">Amount</th><th className="px-4 py-3">Method</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Reference</th><th className="px-4 py-3 text-right">Action</th></tr></thead><tbody className="divide-y divide-gray-100">{payments.map((payment) => <tr key={payment._id} className="hover:bg-gray-50/70"><td className="px-4 py-4 text-sm text-gray-600">{formatPaymentDate(payment.paymentDate)}</td><td className="px-4 py-4"><p className="font-semibold text-gray-900">{paymentMemberName(payment.member)}</p><p className="mt-1 font-mono text-xs font-semibold text-blue-700">{payment.member.memberId}</p></td><td className="px-4 py-4"><p className="text-sm font-semibold text-gray-900">{payment.membership.plan.name}</p><p className="mt-1 text-xs capitalize text-gray-500">{payment.membership.status}</p></td><td className="px-4 py-4 font-bold text-gray-900">{inrFormatter.format(payment.amount)}</td><td className="px-4 py-4 text-sm text-gray-600">{paymentMethodLabel(payment.paymentMethod)}</td><td className="px-4 py-4"><PaymentStatusBadge status={payment.status} /></td><td className="max-w-44 truncate px-4 py-4 text-sm text-gray-600" title={payment.transactionReference}>{payment.transactionReference || '—'}</td><td className="px-4 py-4 text-right"><Link href={`/dashboard/payments/${encodeURIComponent(payment._id)}`} className="text-sm font-semibold text-blue-700 hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500">View</Link></td></tr>)}</tbody></table></div>
-            <div className="grid gap-3 xl:hidden">{payments.map((payment) => <article key={payment._id} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div><p className="text-lg font-bold text-gray-900">{inrFormatter.format(payment.amount)}</p><p className="mt-1 text-sm text-gray-500">{formatPaymentDate(payment.paymentDate)}</p></div><PaymentStatusBadge status={payment.status} /></div><div className="mt-4 border-t border-gray-100 pt-4"><h3 className="font-semibold text-gray-900">{paymentMemberName(payment.member)}</h3><p className="mt-1 font-mono text-xs font-semibold text-blue-700">{payment.member.memberId}</p><p className="mt-2 text-sm text-gray-600">{payment.membership.plan.name} · {paymentMethodLabel(payment.paymentMethod)}</p>{payment.transactionReference && <p className="mt-2 break-words text-xs text-gray-500">Reference: {payment.transactionReference}</p>}<Link href={`/dashboard/payments/${encodeURIComponent(payment._id)}`} className="mt-4 inline-block w-full rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-center text-sm font-semibold text-blue-700">View Payment</Link></div></article>)}</div>
+            <div className="hidden overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm xl:block"><table className="w-full text-left"><thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500"><tr><th className="px-4 py-3">Date</th><th className="px-4 py-3">Member</th><th className="px-4 py-3">Membership</th><th className="px-4 py-3">Amount</th><th className="px-4 py-3">Method</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Reference</th><th className="px-4 py-3 text-right">Action</th></tr></thead><tbody className="divide-y divide-gray-100">{payments.map((payment) => <tr key={payment._id} className="hover:bg-gray-50/70"><td className="px-4 py-4 text-sm text-gray-600">{formatPaymentDate(payment.paymentDate)}</td><td className="px-4 py-4"><p className="font-semibold text-gray-900">{paymentMemberName(payment.member)}</p><p className="mt-1 font-mono text-xs font-semibold text-blue-700">{payment.member.memberId}</p></td><td className="px-4 py-4"><p className="text-sm font-semibold text-gray-900">{payment.membership.plan.name}</p><p className="mt-1 text-xs capitalize text-gray-500">{payment.membership.status}</p></td><td className="px-4 py-4 font-bold text-gray-900">{inrFormatter.format(payment.amount)}</td><td className="px-4 py-4 text-sm text-gray-600">{paymentMethodLabel(payment.paymentMethod)}</td><td className="px-4 py-4"><PaymentStatusBadge status={payment.status} /></td><td className="max-w-44 truncate px-4 py-4 text-sm text-gray-600" title={payment.transactionReference}>{payment.transactionReference || '—'}</td><td className="px-4 py-4 text-right"><Link href={`/dashboard/payments/${encodeURIComponent(payment._id)}?returnTo=${encodeURIComponent(returnTo)}`} className="text-sm font-semibold text-blue-700 hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500">View</Link></td></tr>)}</tbody></table></div>
+            <div className="grid gap-3 xl:hidden">{payments.map((payment) => <article key={payment._id} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div><p className="text-lg font-bold text-gray-900">{inrFormatter.format(payment.amount)}</p><p className="mt-1 text-sm text-gray-500">{formatPaymentDate(payment.paymentDate)}</p></div><PaymentStatusBadge status={payment.status} /></div><div className="mt-4 border-t border-gray-100 pt-4"><h3 className="font-semibold text-gray-900">{paymentMemberName(payment.member)}</h3><p className="mt-1 font-mono text-xs font-semibold text-blue-700">{payment.member.memberId}</p><p className="mt-2 text-sm text-gray-600">{payment.membership.plan.name} · {paymentMethodLabel(payment.paymentMethod)}</p>{payment.transactionReference && <p className="mt-2 break-words text-xs text-gray-500">Reference: {payment.transactionReference}</p>}<Link href={`/dashboard/payments/${encodeURIComponent(payment._id)}?returnTo=${encodeURIComponent(returnTo)}`} className="mt-4 inline-block w-full rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-center text-sm font-semibold text-blue-700">View Payment</Link></div></article>)}</div>
             <PaymentsPagination page={page} totalPages={totalPages} total={total} pageSize={PAGE_SIZE} onPageChange={setPage} />
           </>
         )}

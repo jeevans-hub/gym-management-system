@@ -8,7 +8,7 @@ import PaymentStatusBadge from '../PaymentStatusBadge';
 import type { PaymentDetailResponse } from '../types';
 import RefundPaymentDialog from './RefundPaymentDialog';
 
-export default function PaymentDetailsPageClient({ paymentId, recorded }: { paymentId: string; recorded: boolean }) {
+export default function PaymentDetailsPageClient({ paymentId, recorded, backHref }: { paymentId: string; recorded: boolean; backHref: string }) {
   const router = useRouter();
   const [data, setData] = useState<PaymentDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +44,7 @@ export default function PaymentDetailsPageClient({ paymentId, recorded }: { paym
   }, [paymentId, reloadKey, router]);
 
   if (loading && !data) return <div role="status" aria-label="Loading payment details" className="mx-auto h-96 w-full max-w-4xl animate-pulse rounded-xl border border-gray-200 bg-white" />;
-  if (notFound) return <div className="mx-auto max-w-xl rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm"><h1 className="text-xl font-bold text-gray-900">Payment not found</h1><p className="mt-2 text-sm text-gray-500">The requested payment does not exist or is no longer available.</p><Link href="/dashboard/payments" className="mt-5 inline-block rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white">Back to Payments</Link></div>;
+  if (notFound) return <div className="mx-auto max-w-xl rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm"><h1 className="text-xl font-bold text-gray-900">Payment not found</h1><p className="mt-2 text-sm text-gray-500">The requested payment does not exist or is no longer available.</p><Link href={backHref} className="mt-5 inline-block rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white">Back to Payments</Link></div>;
   if (error && !data) return <div role="alert" className="mx-auto max-w-xl rounded-xl border border-red-200 bg-red-50 p-8 text-center"><h1 className="font-semibold text-red-900">Unable to load payment</h1><p className="mt-2 text-sm text-red-700">{error}</p><button type="button" onClick={() => setReloadKey((value) => value + 1)} className="mt-5 rounded-lg bg-red-700 px-4 py-2.5 text-sm font-semibold text-white">Try again</button></div>;
   if (!data) return null;
 
@@ -52,7 +52,7 @@ export default function PaymentDetailsPageClient({ paymentId, recorded }: { paym
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div><Link href="/dashboard/payments" className="text-sm font-semibold text-blue-700 hover:text-blue-900">← Back to Payments</Link><p className="mt-5 text-sm font-semibold text-blue-700">Payment record · INR · IST</p><h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Payment Details</h1></div>
+        <div><Link href={backHref} className="text-sm font-semibold text-blue-700 hover:text-blue-900">← Back to Payments</Link><p className="mt-5 text-sm font-semibold text-blue-700">Payment record · INR · IST</p><h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Payment Details</h1></div>
         {payment.status === 'paid' && <button type="button" onClick={() => setRefundOpen(true)} className="rounded-lg border border-red-300 bg-white px-5 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50">Refund Payment</button>}
       </header>
       {(recorded || refunded) && <div role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">{refunded ? 'Payment refunded successfully. The membership balance has been updated.' : 'Payment recorded successfully.'}</div>}
