@@ -53,6 +53,7 @@ MemberSchema.index(
   { email: 1 },
   { unique: true, partialFilterExpression: { email: { $type: 'string' } } }
 );
+MemberSchema.index({ joiningDate: -1 });
 
 export async function generateMemberId(): Promise<string> {
   const counter = await Counter.findByIdAndUpdate(

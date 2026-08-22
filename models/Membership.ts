@@ -79,6 +79,7 @@ MembershipSchema.index(
 MembershipSchema.index({ member: 1, createdAt: -1 });
 MembershipSchema.index({ plan: 1 });
 MembershipSchema.index({ status: 1, endDate: 1 });
+MembershipSchema.index({ startDate: -1 });
 
 export default
   (mongoose.models.Membership as Model<IMembership>) ||
