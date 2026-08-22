@@ -40,7 +40,10 @@ export default function MemberDetailsPageClient({ memberId, success }: MemberDet
           <h1 className="mt-3 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Member Details</h1>
           <p className="mt-1 text-sm text-gray-500">Review this member&apos;s profile and record information.</p>
         </div>
-        <div className="flex w-full gap-2 sm:w-auto">
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
+          <Link href={`/dashboard/attendance?member=${encodeURIComponent(member.memberId)}`} className="col-span-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-center text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:col-span-1">
+            View Attendance History
+          </Link>
           <Link href={`/dashboard/members/${encodeURIComponent(member.memberId)}/edit`} className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-center text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:flex-none">
             Edit
           </Link>
