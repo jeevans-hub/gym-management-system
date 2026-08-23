@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import NotificationBell from './notifications/NotificationBell';
 
 interface User {
   id: string;
@@ -78,6 +79,7 @@ export default function DashboardHeader({ user, onMenuToggle, isMenuOpen }: Dash
 
           {/* Right side */}
           <div className="flex items-center space-x-3 lg:space-x-4">
+            <NotificationBell />
             {/* User info */}
             <div className="flex items-center space-x-3">
               {/* Avatar */}

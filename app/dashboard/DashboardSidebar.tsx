@@ -12,6 +12,7 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { name: 'Dashboard', path: '/dashboard', available: true, icon: <DashboardIcon /> },
+  { name: 'Notifications', path: '/dashboard/notifications', available: true, icon: <NotificationsIcon /> },
   { name: 'Members', path: '/dashboard/members', available: true, icon: <MembersIcon /> },
   { name: 'Attendance', path: '/dashboard/attendance', available: true, icon: <AttendanceIcon /> },
   { name: 'Memberships', path: '/dashboard/memberships', available: true, icon: <MembershipsIcon /> },
@@ -119,6 +120,14 @@ function MembersIcon() {
   return (
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+    </svg>
+  );
+}
+
+function NotificationsIcon() {
+  return (
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17H9m10-2V11a7 7 0 10-14 0v4l-2 2h18l-2-2zm-5 5a3 3 0 01-6 0" />
     </svg>
   );
 }
