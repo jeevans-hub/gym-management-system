@@ -8,10 +8,10 @@ export async function POST(request: Request) {
     await connectDB();
 
     const body = await request.json();
-    const { email, password } = body;
+    const { email, password } = body ?? {};
 
     // Validate required fields
-    if (!email || !password) {
+    if (typeof email !== 'string' || typeof password !== 'string' || !email.trim() || !password) {
       return NextResponse.json(
         { error: 'Email and password are required' },
         { status: 400 }
@@ -75,6 +75,9 @@ export async function POST(request: Request) {
 
     return response;
   } catch (error: unknown) {
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
     console.error('Login error:', error instanceof Error ? error.name : 'UnknownError');
     return NextResponse.json(
       { error: 'Login failed. Please try again.' },
