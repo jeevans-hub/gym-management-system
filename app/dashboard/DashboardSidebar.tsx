@@ -100,7 +100,7 @@ export default function DashboardSidebar({ isOpen = true, onClose }: DashboardSi
           <div className="text-xs text-gray-500">
             <p>© {new Date().getFullYear()} GymPro System</p>
             <p className="mt-1">Version 1.0.0</p>
-            <p className="mt-1">Professional Gym Management Software</p>
+            <p className="mt-1 whitespace-nowrap text-[11px]">Professional Gym Management Software</p>
           </div>
         </div>
       </aside>
