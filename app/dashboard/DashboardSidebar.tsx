@@ -98,8 +98,9 @@ export default function DashboardSidebar({ isOpen = true, onClose }: DashboardSi
         {/* Footer */}
         <div className="shrink-0 border-t border-gray-700 p-6">
           <div className="text-xs text-gray-500">
-            <p>© 2024 GymPro System</p>
+            <p>© {new Date().getFullYear()} GymPro System</p>
             <p className="mt-1">Version 1.0.0</p>
+            <p className="mt-1">Professional Gym Management Software</p>
           </div>
         </div>
       </aside>
